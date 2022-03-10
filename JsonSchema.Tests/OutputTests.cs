@@ -1,55 +1,55 @@
 ﻿using System.Text.Json;
 using NUnit.Framework;
 
-namespace Json.Schema.Tests
+namespace Json.Schema.Tests;
+
+public class OutputTests
 {
-	public class OutputTests
-	{
-		private static readonly JsonSchema _schema =
-			new JsonSchemaBuilder()
-				.Id("https://test.com/schema")
-				.Defs(
-					("integer", new JsonSchemaBuilder().Type(SchemaValueType.Integer)),
-					("minimum", new JsonSchemaBuilder().Minimum(5))
-				)
-				.Type(SchemaValueType.Object)
-				.Properties(
-					("passes", true),
-					("fails", false),
-					("refs", new JsonSchemaBuilder().Ref("#/$defs/integer")),
-					("multi", new JsonSchemaBuilder()
-						.AllOf(
-							new JsonSchemaBuilder().Ref("#/$defs/integer"),
-							new JsonSchemaBuilder().Ref("#/$defs/minimum")
-						)
+	private static readonly JsonSchema _schema =
+		new JsonSchemaBuilder()
+			.Id("https://test.com/schema")
+			.Defs(
+				("integer", new JsonSchemaBuilder().Type(SchemaValueType.Integer)),
+				("minimum", new JsonSchemaBuilder().Minimum(5))
+			)
+			.Type(SchemaValueType.Object)
+			.Properties(
+				("passes", true),
+				("fails", false),
+				("refs", new JsonSchemaBuilder().Ref("#/$defs/integer")),
+				("multi", new JsonSchemaBuilder()
+					.AllOf(
+						new JsonSchemaBuilder().Ref("#/$defs/integer"),
+						new JsonSchemaBuilder().Ref("#/$defs/minimum")
 					)
-				);
+				)
+			);
 
-		[Test]
-		public void Flag_Success()
-		{
-			var result = Validate("{\"passes\":\"value\"}", OutputFormat.Flag);
+	[Test]
+	public void Flag_Success()
+	{
+		var result = Validate("{\"passes\":\"value\"}", OutputFormat.Flag);
 
-			result.AssertValid();
-			Assert.IsEmpty(result.NestedResults);
-			Assert.IsEmpty(result.Annotations);
-		}
+		result.AssertValid();
+		Assert.IsEmpty(result.NestedResults);
+		Assert.IsEmpty(result.Annotations);
+	}
 
-		[Test]
-		public void Flag_Failure()
-		{
-			var result = Validate("{\"fails\":\"value\"}", OutputFormat.Flag);
+	[Test]
+	public void Flag_Failure()
+	{
+		var result = Validate("{\"fails\":\"value\"}", OutputFormat.Flag);
 
-			result.AssertInvalid();
-			Assert.IsEmpty(result.NestedResults);
-			Assert.IsEmpty(result.Annotations);
-		}
+		result.AssertInvalid();
+		Assert.IsEmpty(result.NestedResults);
+		Assert.IsEmpty(result.Annotations);
+	}
 
-		[Test]
-		public void Basic_Success()
-		{
-			var result = Validate("{\"passes\":\"value\"}", OutputFormat.Basic);
-			var expected = @"{
+	[Test]
+	public void Basic_Success()
+	{
+		var result = Validate("{\"passes\":\"value\"}", OutputFormat.Basic);
+		var expected = @"{
   ""valid"": true,
   ""keywordLocation"": ""#"",
   ""instanceLocation"": ""#"",
@@ -65,51 +65,51 @@ namespace Json.Schema.Tests
   ]
 }";
 
-			result.AssertValid(expected);
-		}
+		result.AssertValid(expected);
+	}
 
-		[Test]
-		public void Basic_Failure()
-		{
-			var result = Validate("{\"fails\":\"value\"}", OutputFormat.Basic);
-			var expected = @"{
+	[Test]
+	public void Basic_Failure()
+	{
+		var result = Validate("{\"fails\":\"value\"}", OutputFormat.Basic);
+		var expected = @"{
   ""valid"": false,
   ""keywordLocation"": ""#/properties/fails"",
   ""instanceLocation"": ""#/fails"",
   ""error"": ""All values fail against the false schema""
 }";
 
-			result.AssertInvalid(expected);
-		}
+		result.AssertInvalid(expected);
+	}
 
-		[Test]
-		public void Detailed_Success()
-		{
-			var result = Validate("{\"passes\":\"value\"}", OutputFormat.Detailed);
+	[Test]
+	public void Detailed_Success()
+	{
+		var result = Validate("{\"passes\":\"value\"}", OutputFormat.Detailed);
 
-			result.AssertValid();
-			Assert.IsEmpty(result.NestedResults);
-			Assert.IsNotEmpty(result.Annotations);
-		}
+		result.AssertValid();
+		Assert.IsEmpty(result.NestedResults);
+		Assert.IsNotEmpty(result.Annotations);
+	}
 
-		[Test]
-		public void Detailed_Failure()
-		{
-			var result = Validate("{\"fails\":\"value\"}", OutputFormat.Detailed);
-			var expected = @"{
+	[Test]
+	public void Detailed_Failure()
+	{
+		var result = Validate("{\"fails\":\"value\"}", OutputFormat.Detailed);
+		var expected = @"{
   ""valid"": false,
   ""keywordLocation"": ""#/properties/fails"",
   ""instanceLocation"": ""#/fails"",
   ""error"": ""All values fail against the false schema""
 }";
-			result.AssertInvalid(expected);
-		}
+		result.AssertInvalid(expected);
+	}
 
-		[Test]
-		public void Detailed_Multi_Success()
-		{
-			var result = Validate("{\"multi\":8}", OutputFormat.Detailed);
-			var expected = @"
+	[Test]
+	public void Detailed_Multi_Success()
+	{
+		var result = Validate("{\"multi\":8}", OutputFormat.Detailed);
+		var expected = @"
 {
   ""valid"": true,
   ""keywordLocation"": ""#"",
@@ -126,14 +126,14 @@ namespace Json.Schema.Tests
   ]
 }";
 
-			result.AssertValid(expected);
-		}
+		result.AssertValid(expected);
+	}
 
-		[Test]
-		public void Detailed_Multi_Failure_Both()
-		{
-			var result = Validate("{\"multi\":3.5}", OutputFormat.Detailed);
-			var expected = @"{
+	[Test]
+	public void Detailed_Multi_Failure_Both()
+	{
+		var result = Validate("{\"multi\":3.5}", OutputFormat.Detailed);
+		var expected = @"{
   ""valid"": false,
   ""keywordLocation"": ""#/properties/multi/allOf"",
   ""instanceLocation"": ""#/multi"",
@@ -155,42 +155,42 @@ namespace Json.Schema.Tests
   ]
 }";
 
-			result.AssertInvalid(expected);
-		}
+		result.AssertInvalid(expected);
+	}
 
-		[Test]
-		public void Detailed_Multi_Failure_Integer()
-		{
-			var result = Validate("{\"fails\":8.5}", OutputFormat.Detailed);
-			var expected = @"{
+	[Test]
+	public void Detailed_Multi_Failure_Integer()
+	{
+		var result = Validate("{\"fails\":8.5}", OutputFormat.Detailed);
+		var expected = @"{
   ""valid"": false,
   ""keywordLocation"": ""#/properties/fails"",
   ""instanceLocation"": ""#/fails"",
   ""error"": ""All values fail against the false schema""
 }";
 
-			result.AssertInvalid(expected);
-		}
+		result.AssertInvalid(expected);
+	}
 
-		[Test]
-		public void Detailed_Multi_Failure_Minimum()
-		{
-			var result = Validate("{\"fails\":3}", OutputFormat.Detailed);
-			var expected = @"{
+	[Test]
+	public void Detailed_Multi_Failure_Minimum()
+	{
+		var result = Validate("{\"fails\":3}", OutputFormat.Detailed);
+		var expected = @"{
   ""valid"": false,
   ""keywordLocation"": ""#/properties/fails"",
   ""instanceLocation"": ""#/fails"",
   ""error"": ""All values fail against the false schema""
 }";
 
-			result.AssertInvalid(expected);
-		}
+		result.AssertInvalid(expected);
+	}
 
-		[Test]
-		public void RelativeAndAbsoluteLocations()
-		{
-			var result = Validate("{\"refs\":8.8}", OutputFormat.Detailed);
-			var expected = @"{
+	[Test]
+	public void RelativeAndAbsoluteLocations()
+	{
+		var result = Validate("{\"refs\":8.8}", OutputFormat.Detailed);
+		var expected = @"{
   ""valid"": false,
   ""keywordLocation"": ""#/properties/refs/$ref/type"",
   ""absoluteKeywordLocation"": ""https://test.com/schema#/$defs/integer/type"",
@@ -198,19 +198,18 @@ namespace Json.Schema.Tests
   ""error"": ""Value is number but should be integer""
 }";
 
-			result.AssertInvalid(expected);
-			Assert.AreEqual("#/properties/refs/$ref/type", result.SchemaLocation.ToString());
-			Assert.AreEqual("https://test.com/schema#/$defs/integer/type", result.AbsoluteSchemaLocation?.ToString());
-		}
+		result.AssertInvalid(expected);
+		Assert.AreEqual("#/properties/refs/$ref/type", result.SchemaLocation.ToString());
+		Assert.AreEqual("https://test.com/schema#/$defs/integer/type", result.AbsoluteSchemaLocation?.ToString());
+	}
 
-		private static ValidationResults Validate(string json, OutputFormat format)
-		{
-			var instance = JsonDocument.Parse(json);
-			var options = ValidationOptions.From(ValidationOptions.Default);
-			options.OutputFormat = format;
+	private static ValidationResults Validate(string json, OutputFormat format)
+	{
+		var instance = JsonDocument.Parse(json);
+		var options = ValidationOptions.From(ValidationOptions.Default);
+		options.OutputFormat = format;
 
-			var result = _schema.Validate(instance.RootElement, options);
-			return result;
-		}
+		var result = _schema.Validate(instance.RootElement, options);
+		return result;
 	}
 }
